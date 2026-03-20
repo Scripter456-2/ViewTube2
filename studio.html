@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ViewTube Studio</title>
-  <link rel="stylesheet" href="css/main.css">
   <style>
     .studio-layout {
       display: grid;
@@ -282,8 +281,651 @@
       .table-header > *:nth-child(4), .table-row > *:nth-child(4) { display: none; }
     }
   </style>
+<style>
+/* ViewTube - Shared Styles */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #111118;
+  --bg-card: #16161f;
+  --bg-hover: #1e1e2a;
+  --bg-input: #1a1a24;
+  --border: #2a2a38;
+  --border-subtle: #1e1e2a;
+  --text-primary: #f0f0f8;
+  --text-secondary: #9898b8;
+  --text-muted: #5a5a78;
+  --accent: #7c5aff;
+  --accent-glow: rgba(124, 90, 255, 0.3);
+  --accent-hover: #9575ff;
+  --accent-2: #ff5a7c;
+  --accent-2-glow: rgba(255, 90, 124, 0.3);
+  --verified-blue: #5ab4ff;
+  --verified-gold: #ffd700;
+  --verified-black: #e0e0e0;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --sidebar-width: 240px;
+  --header-height: 58px;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 16px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 30px rgba(124, 90, 255, 0.15);
+  --transition: 0.2s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Header */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-height);
+  background: rgba(10, 10, 15, 0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  z-index: 1000;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.logo-text {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.logo-text span { color: var(--accent); }
+
+.header-search {
+  flex: 1;
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+}
+
+.search-input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  height: 40px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: var(--radius) 0 0 var(--radius);
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  padding: 0 16px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text-muted); }
+
+.search-btn {
+  height: 40px;
+  padding: 0 18px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+
+.search-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+.btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 24px var(--accent-glow); }
+
+.btn-secondary {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+.btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.icon-btn {
+  width: 38px; height: 38px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: all var(--transition);
+}
+.icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  width: var(--sidebar-width);
+  height: calc(100vh - var(--header-height));
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  padding: 12px 0;
+  z-index: 100;
+  transition: transform 0.3s ease;
+}
+
+.sidebar.hidden { transform: translateX(-100%); }
+
+.sidebar-section { padding: 8px 0; }
+
+.sidebar-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 6px 20px;
+  margin-top: 4px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  border-radius: 0;
+  position: relative;
+}
+
+.sidebar-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.sidebar-item.active {
+  background: rgba(124, 90, 255, 0.1);
+  color: var(--accent);
+}
+
+.sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 4px; bottom: 4px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.sidebar-item svg, .sidebar-item .icon { width: 20px; height: 20px; flex-shrink: 0; }
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 8px 12px;
+}
+
+/* Main Content Area */
+.main {
+  margin-left: var(--sidebar-width);
+  margin-top: var(--header-height);
+  min-height: calc(100vh - var(--header-height));
+  padding: 24px;
+}
+
+/* Category Chips */
+.category-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+  scrollbar-width: none;
+}
+.category-bar::-webkit-scrollbar { display: none; }
+
+.chip {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  transition: all var(--transition);
+}
+
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+
+/* Video Grid */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Video Card */
+.video-card {
+  cursor: pointer;
+  transition: transform var(--transition);
+}
+
+.video-card:hover { transform: translateY(-2px); }
+
+.video-thumb {
+  position: relative;
+  aspect-ratio: 16/9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+.video-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.video-card:hover .video-thumb img { transform: scale(1.04); }
+
+.video-duration {
+  position: absolute;
+  bottom: 8px; right: 8px;
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.video-play-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.video-card:hover .video-play-overlay { background: rgba(0,0,0,0.3); }
+
+.play-btn-overlay {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: rgba(124,90,255,0.9);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s ease;
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+.video-card:hover .play-btn-overlay { opacity: 1; transform: scale(1); }
+
+.video-info {
+  display: flex;
+  gap: 10px;
+  padding: 10px 4px 4px;
+}
+
+.channel-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-card);
+}
+
+.channel-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.video-meta { flex: 1; min-width: 0; }
+
+.video-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.video-channel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  width: fit-content;
+}
+
+.video-channel:hover { color: var(--text-primary); }
+
+.video-stats {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Verified Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+
+.badge-verified { background: var(--verified-blue); color: #fff; }
+.badge-gold { background: var(--verified-gold); color: #000; }
+.badge-black { background: #111; color: var(--verified-black); border: 1px solid var(--verified-black); }
+
+.badge-lg { width: 20px; height: 20px; font-size: 11px; }
+
+/* Section Titles */
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title .accent { color: var(--accent); }
+
+/* Trending Rank Badge */
+.trending-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  padding: 14px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 14px;
+  z-index: 9999;
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 10px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: var(--success); }
+.toast.error { border-color: var(--danger); }
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state h3 { font-size: 18px; color: var(--text-secondary); margin-bottom: 8px; }
+.empty-state p { font-size: 14px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .main { margin-left: 0; padding: 16px; }
+  .header-search { max-width: 200px; }
+  .logo-text { display: none; }
+}
+
+</style>
 </head>
 <body>
+<script>
+
+const _VIDEOS_DATA = [{"id": "v001", "title": "The Future of AI: What Nobody Is Telling You", "channelId": "ch_001", "thumbnail": "https://picsum.photos/seed/v001/640/360", "duration": "18:42", "views": 4820000, "viewsFormatted": "4.8M views", "likes": 182000, "dislikes": 3200, "uploadDate": "2025-03-10", "uploadedAgo": "2 weeks ago", "description": "In this deep dive, we explore the latest breakthroughs in artificial intelligence and what they mean for humanity. From GPT to autonomous systems, nothing is off limits.", "tags": ["AI", "Technology", "Future", "Machine Learning"], "category": "Technology", "isTrending": true, "trendingRank": 1, "videoUrl": "", "comments": [{"id": "c001", "user": "Alex Rivera", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=alex", "text": "This is genuinely one of the best tech breakdowns I've seen this year. Mind blown! \ud83e\udd2f", "likes": 4821, "time": "1 week ago"}, {"id": "c002", "user": "Sarah Chen", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=sarah", "text": "The part about neural scaling laws was incredible. Did not expect that twist.", "likes": 2103, "time": "1 week ago"}, {"id": "c003", "user": "DevNerd99", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=devnerd", "text": "Came for the clickbait title, stayed for the actual quality content. Rare.", "likes": 987, "time": "5 days ago"}]}, {"id": "v002", "title": "2 Hours of Late Night Lo-Fi to Study and Relax \ud83c\udf19", "channelId": "ch_002", "thumbnail": "https://picsum.photos/seed/v002/640/360", "duration": "2:01:33", "views": 12100000, "viewsFormatted": "12.1M views", "likes": 541000, "dislikes": 4100, "uploadDate": "2025-02-20", "uploadedAgo": "1 month ago", "description": "The perfect lo-fi playlist for late night study sessions, coding, or just chilling. No ads, no interruptions.", "tags": ["lo-fi", "study", "music", "chill", "beats"], "category": "Music", "isTrending": true, "trendingRank": 2, "videoUrl": "", "comments": [{"id": "c004", "user": "NightOwl", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=nightowl", "text": "I've been using this playlist every night for 3 weeks straight. Pure perfection.", "likes": 8842, "time": "3 weeks ago"}, {"id": "c005", "user": "CodeMonk", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=codemonk", "text": "Wrote 600 lines of code listening to this. 10/10.", "likes": 3201, "time": "2 weeks ago"}]}, {"id": "v003", "title": "James Webb Telescope: New Images That Will Change Everything", "channelId": "ch_003", "thumbnail": "https://picsum.photos/seed/v003/640/360", "duration": "32:10", "views": 28400000, "viewsFormatted": "28.4M views", "likes": 1200000, "dislikes": 12000, "uploadDate": "2025-01-15", "uploadedAgo": "2 months ago", "description": "The James Webb Space Telescope continues to rewrite the textbooks. This video showcases the newest batch of images and what they reveal about the early universe.", "tags": ["NASA", "Space", "James Webb", "Universe", "Science"], "category": "Science", "isTrending": true, "trendingRank": 3, "videoUrl": "", "comments": [{"id": "c006", "user": "StarGazer", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=stargazer", "text": "Every single time NASA drops new JWST images I feel genuinely emotional. We're so small.", "likes": 22901, "time": "2 months ago"}, {"id": "c007", "user": "PhysicsGeek", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=physicsgeek", "text": "The galaxy cluster images at 14:22 broke my brain. Beautiful.", "likes": 9441, "time": "2 months ago"}]}, {"id": "v004", "title": "Perfect Pasta Carbonara in 15 Minutes \u2013 No Cream!", "channelId": "ch_004", "thumbnail": "https://picsum.photos/seed/v004/640/360", "duration": "15:08", "views": 3200000, "viewsFormatted": "3.2M views", "likes": 98000, "dislikes": 1800, "uploadDate": "2025-03-01", "uploadedAgo": "3 weeks ago", "description": "The authentic Roman carbonara recipe. No cream, no shortcuts \u2014 just eggs, guanciale, pecorino, and black pepper. Let me show you how.", "tags": ["cooking", "pasta", "italian", "recipe", "carbonara"], "category": "Food", "isTrending": true, "trendingRank": 4, "videoUrl": "", "comments": [{"id": "c008", "user": "FoodieFan", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=foodie", "text": "Made this last night. My Italian grandmother approved. HIGH praise!", "likes": 5512, "time": "2 weeks ago"}, {"id": "c009", "user": "PastaLover", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=pasta", "text": "Adding cream to carbonara should be illegal. Thank you for this video.", "likes": 8901, "time": "3 weeks ago"}]}, {"id": "v005", "title": "GTA VI First Look: Everything We Know", "channelId": "ch_005", "thumbnail": "https://picsum.photos/seed/v005/640/360", "duration": "24:55", "views": 18900000, "viewsFormatted": "18.9M views", "likes": 820000, "dislikes": 34000, "uploadDate": "2025-03-05", "uploadedAgo": "2 weeks ago", "description": "Every single detail, leak, and official confirmation about GTA VI compiled into the ultimate breakdown video.", "tags": ["GTA 6", "Gaming", "Rockstar", "PS5", "Xbox"], "category": "Gaming", "isTrending": true, "trendingRank": 5, "videoUrl": "", "comments": [{"id": "c010", "user": "GamerPro", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=gamer", "text": "Been waiting for this since 2013. Ready to quit my job on release day.", "likes": 43001, "time": "2 weeks ago"}, {"id": "c011", "user": "NoLifeGamer", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=nolife", "text": "The detail at 11:32 about the physics engine... that's next level.", "likes": 12330, "time": "1 week ago"}]}, {"id": "v006", "title": "10-Minute Morning Meditation for Focus", "channelId": "ch_006", "thumbnail": "https://picsum.photos/seed/v006/640/360", "duration": "10:00", "views": 890000, "viewsFormatted": "890K views", "likes": 42000, "dislikes": 500, "uploadDate": "2025-02-28", "uploadedAgo": "1 month ago", "description": "Start your day with clarity and intention. This 10-minute guided meditation will help you focus and find calm before the day begins.", "tags": ["meditation", "wellness", "mindfulness", "morning routine"], "category": "Wellness", "isTrending": false, "trendingRank": null, "videoUrl": "", "comments": [{"id": "c012", "user": "ZenMaster", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=zen", "text": "My morning routine isn't complete without this. 30-day streak!", "likes": 3401, "time": "3 weeks ago"}]}, {"id": "v007", "title": "Building a Full Stack App with Next.js 15 in One Video", "channelId": "ch_001", "thumbnail": "https://picsum.photos/seed/v007/640/360", "duration": "1:42:17", "views": 2300000, "viewsFormatted": "2.3M views", "likes": 112000, "dislikes": 2100, "uploadDate": "2025-03-08", "uploadedAgo": "2 weeks ago", "description": "A complete project from zero to deployment. We build a SaaS app with auth, database, payments and CI/CD.", "tags": ["Next.js", "React", "Coding", "Tutorial", "Web Dev"], "category": "Technology", "isTrending": false, "trendingRank": null, "videoUrl": "", "comments": [{"id": "c013", "user": "WebDevWill", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=will", "text": "This is literally the only tutorial you need for Next.js. Bookmark it.", "likes": 6723, "time": "1 week ago"}]}, {"id": "v008", "title": "Elden Ring: Shadow of the Erdtree \u2013 Final Boss Guide", "channelId": "ch_005", "thumbnail": "https://picsum.photos/seed/v008/640/360", "duration": "28:44", "views": 6700000, "viewsFormatted": "6.7M views", "likes": 310000, "dislikes": 8200, "uploadDate": "2025-02-14", "uploadedAgo": "5 weeks ago", "description": "The most complete guide to defeating the final boss of Shadow of the Erdtree. All phases, all strategies.", "tags": ["Elden Ring", "Gaming", "Boss Guide", "FromSoftware"], "category": "Gaming", "isTrending": false, "trendingRank": null, "videoUrl": "", "comments": [{"id": "c014", "user": "SoulsBorn", "avatar": "https://api.dicebear.com/7.x/thumbs/svg?seed=souls", "text": "Finally beat it thanks to this guide. Nearly threw my controller 12 times.", "likes": 14200, "time": "4 weeks ago"}]}];
+const _CHANNELS_DATA = [{"id": "ch_001", "name": "TechVision Pro", "handle": "@techvisionpro", "avatar": "https://api.dicebear.com/7.x/shapes/svg?seed=techvision&backgroundColor=0f172a", "banner": "", "subscribers": "4.2M", "subscriberCount": 4200000, "description": "The latest in tech, AI, and innovation.", "IsVerified": true, "IsGoldVerified": false, "IsBlackVerified": false}, {"id": "ch_002", "name": "Chill Beats Studio", "handle": "@chillbeatsstudio", "avatar": "https://api.dicebear.com/7.x/shapes/svg?seed=chillbeats&backgroundColor=1e1b4b", "banner": "", "subscribers": "12.8M", "subscriberCount": 12800000, "description": "Lo-fi, chill, and study beats 24/7.", "IsVerified": false, "IsGoldVerified": true, "IsBlackVerified": false}, {"id": "ch_003", "name": "NASA Official", "handle": "@nasaofficial", "avatar": "https://api.dicebear.com/7.x/shapes/svg?seed=nasa&backgroundColor=0c0a09", "banner": "", "subscribers": "98.3M", "subscriberCount": 98300000, "description": "Official NASA ViewTube channel. Explore the universe.", "IsVerified": false, "IsGoldVerified": false, "IsBlackVerified": true}, {"id": "ch_004", "name": "CookingWithAlex", "handle": "@cookingwithalex", "avatar": "https://api.dicebear.com/7.x/shapes/svg?seed=cookalex&backgroundColor=14532d", "banner": "", "subscribers": "2.1M", "subscriberCount": 2100000, "description": "Simple, delicious recipes for everyone.", "IsVerified": true, "IsGoldVerified": false, "IsBlackVerified": false}, {"id": "ch_005", "name": "GameZone X", "handle": "@gamezonex", "avatar": "https://api.dicebear.com/7.x/shapes/svg?seed=gamezonex&backgroundColor=3b0764", "banner": "", "subscribers": "8.7M", "subscriberCount": 8700000, "description": "Gaming news, reviews, and live streams.", "IsVerified": false, "IsGoldVerified": false, "IsBlackVerified": false}, {"id": "ch_006", "name": "MindfulMoments", "handle": "@mindfulmoments", "avatar": "https://api.dicebear.com/7.x/shapes/svg?seed=mindful&backgroundColor=164e63", "banner": "", "subscribers": "890K", "subscriberCount": 890000, "description": "Meditation, yoga and wellness journeys.", "IsVerified": false, "IsGoldVerified": false, "IsBlackVerified": false}];
+const _SHORTS_DATA = [{"id": "s001", "title": "AI draws itself in 10 seconds \ud83e\udd2f", "channelId": "ch_001", "thumbnail": "https://picsum.photos/seed/s001/400/711", "duration": "0:58", "views": 14200000, "viewsFormatted": "14.2M", "likes": 620000, "uploadedAgo": "3 days ago", "videoUrl": ""}, {"id": "s002", "title": "Carbonara in 60 seconds \ud83c\udf5d", "channelId": "ch_004", "thumbnail": "https://picsum.photos/seed/s002/400/711", "duration": "0:55", "views": 8900000, "viewsFormatted": "8.9M", "likes": 412000, "uploadedAgo": "1 week ago", "videoUrl": ""}, {"id": "s003", "title": "Webb telescope captures star being born \ud83c\udf1f", "channelId": "ch_003", "thumbnail": "https://picsum.photos/seed/s003/400/711", "duration": "0:59", "views": 32100000, "viewsFormatted": "32.1M", "likes": 1800000, "uploadedAgo": "5 days ago", "videoUrl": ""}, {"id": "s004", "title": "This game mechanic is insane \ud83c\udfae", "channelId": "ch_005", "thumbnail": "https://picsum.photos/seed/s004/400/711", "duration": "0:45", "views": 6200000, "viewsFormatted": "6.2M", "likes": 280000, "uploadedAgo": "2 days ago", "videoUrl": ""}, {"id": "s005", "title": "1 minute morning breathwork \ud83e\uddd8", "channelId": "ch_006", "thumbnail": "https://picsum.photos/seed/s005/400/711", "duration": "1:00", "views": 2100000, "viewsFormatted": "2.1M", "likes": 98000, "uploadedAgo": "4 days ago", "videoUrl": ""}, {"id": "s006", "title": "Lo-fi drop that hits different \ud83c\udfb5", "channelId": "ch_002", "thumbnail": "https://picsum.photos/seed/s006/400/711", "duration": "0:52", "views": 4800000, "viewsFormatted": "4.8M", "likes": 210000, "uploadedAgo": "6 days ago", "videoUrl": ""}];
+// Override loadJSON to use inline data
+async function loadJSON(path) {
+  if (path.includes('videos')) return JSON.parse(JSON.stringify(_VIDEOS_DATA));
+  if (path.includes('channels')) return JSON.parse(JSON.stringify(_CHANNELS_DATA));
+  if (path.includes('shorts')) return JSON.parse(JSON.stringify(_SHORTS_DATA));
+  return [];
+}
+
+// ViewTube - Shared Utilities
+
+// loadJSON: using inline data (see _VIDEOS_DATA etc above)
+
+// --- Verified Badge ---
+function getBadgeHTML(channel, size = '') {
+  const cls = `badge ${size}`;
+  if (channel.IsBlackVerified) {
+    return `<span class="${cls} badge-black" title="Official Creator">✓</span>`;
+  }
+  if (channel.IsGoldVerified) {
+    return `<span class="${cls} badge-gold" title="Gold Verified">★</span>`;
+  }
+  if (channel.IsVerified) {
+    return `<span class="${cls} badge-verified" title="Verified">✓</span>`;
+  }
+  return '';
+}
+
+// --- Format Numbers ---
+function formatViews(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  return n.toString();
+}
+
+// --- Video Card ---
+function buildVideoCard(video, channel) {
+  const card = document.createElement('div');
+  card.className = 'video-card';
+  card.innerHTML = `
+    <div class="video-thumb">
+      <img src="${video.thumbnail}" alt="${escapeHTML(video.title)}" loading="lazy">
+      <div class="video-play-overlay">
+        <div class="play-btn-overlay">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+      </div>
+      <span class="video-duration">${video.duration}</span>
+    </div>
+    <div class="video-info">
+      <div class="channel-avatar">
+        <img src="${channel ? channel.avatar : ''}" alt="${channel ? channel.name : ''}" loading="lazy">
+      </div>
+      <div class="video-meta">
+        <div class="video-title">${escapeHTML(video.title)}</div>
+        <a class="video-channel" href="#">
+          ${channel ? escapeHTML(channel.name) : 'Unknown'}
+          ${channel ? getBadgeHTML(channel) : ''}
+        </a>
+        <div class="video-stats">${formatViews(video.views)} views &middot; ${video.uploadedAgo}</div>
+      </div>
+    </div>
+  `;
+  card.addEventListener('click', () => {
+    window.location.href = `watch.html?v=${video.id}`;
+  });
+  return card;
+}
+
+// --- Escape HTML ---
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str || ''));
+  return div.innerHTML;
+}
+
+// --- Toast ---
+function showToast(msg, type = 'info') {
+  let toast = document.getElementById('global-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'global-toast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  toast.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  toast.className = `toast ${type} show`;
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+
+// --- URL Params ---
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+// --- Sidebar toggle ---
+function initSidebarToggle() {
+  const toggle = document.getElementById('sidebar-toggle');
+  const sidebar = document.querySelector('.sidebar');
+  if (toggle && sidebar) {
+    toggle.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('mobile-open');
+      } else {
+        sidebar.classList.toggle('hidden');
+        const main = document.querySelector('.main');
+        if (main) main.classList.toggle('no-sidebar');
+      }
+    });
+  }
+}
+
+// --- Active Sidebar Link ---
+function setActiveSidebarLink() {
+  const page = window.location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.sidebar-item[data-page]').forEach(el => {
+    if (el.dataset.page === page) el.classList.add('active');
+  });
+}
+
+// --- Init Search ---
+function initSearch() {
+  const input = document.querySelector('.search-input');
+  const btn = document.querySelector('.search-btn');
+  const doSearch = () => {
+    const q = input?.value.trim();
+    if (q) showToast(`Searching for "${q}"…`, 'info');
+  };
+  btn?.addEventListener('click', doSearch);
+  input?.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+}
+
+</script>
 
 <!-- Header -->
 <header class="header">
@@ -485,8 +1127,6 @@
 </div>
 
 <div class="toast" id="global-toast"></div>
-
-<script src="js/viewtube.js"></script>
 <script>
   // --- Chart ---
   function drawChart(period) {
