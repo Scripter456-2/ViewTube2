@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shorts – ViewTube</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { overflow: hidden; }
+    .shorts-layout {
+      display: flex;
+      height: 100vh;
+      padding-top: var(--header-height);
+      background: var(--bg-primary);
+    }
+
+    /* Shorts Feed */
+    .shorts-feed {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      height: calc(100vh - var(--header-height));
+    }
+
+    .short-player-wrap {
+      position: relative;
+      height: calc(100vh - var(--header-height) - 20px);
+      max-height: 820px;
+      aspect-ratio: 9/16;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+    }
+
+    .short-thumbnail {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .short-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px 16px;
+    }
+
+    /* Short Progress Bars */
+    .short-progress-bars {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 14px;
+    }
+    .short-progress-bar {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .short-progress-fill {
+      height: 100%;
+      background: white;
+      border-radius: 2px;
+      width: 0%;
+    }
+    .short-progress-bar.done .short-progress-fill { width: 100%; }
+    .short-progress-bar.active .short-progress-fill { transition: width 0.05s linear; }
+
+    /* Short Info */
+    .short-channel {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .short-ch-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid white;
+      flex-shrink: 0;
+    }
+    .short-ch-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .short-ch-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .short-sub-btn {
+      padding: 5px 12px;
+      border-radius: 14px;
+      background: white;
+      color: #000;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: 'Outfit', sans-serif;
+    }
+    .short-sub-btn:hover { background: var(--accent); color: white; }
+    .short-sub-btn.subscribed { background: rgba(255,255,255,0.2); color: white; }
+
+    .short-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      line-height: 1.4;
+      margin-bottom: 8px;
+      max-width: 280px;
+    }
+
+    .short-views {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* Center Play Button */
+    .short-center-btn {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      pointer-events: none;
+    }
+    .short-play-btn {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      transform: scale(0);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .short-player-wrap.paused .short-play-btn {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    /* Side Actions */
+    .short-actions {
+      position: absolute;
+      right: -68px;
+      bottom: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .short-action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: transform var(--transition);
+    }
+    .short-action-btn:hover { transform: scale(1.1); }
+    .short-action-btn:active { transform: scale(0.95); }
+
+    .short-action-icon {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      color: white;
+      transition: all var(--transition);
+    }
+    .short-action-btn:hover .short-action-icon { background: rgba(255,255,255,0.15); }
+    .short-action-btn.liked .short-action-icon { background: rgba(124,90,255,0.3); border-color: var(--accent); color: var(--accent); }
+
+    .short-action-label {
+      font-size: 11px;
+      color: white;
+      font-weight: 600;
+    }
+
+    /* Nav Arrows */
+    .short-nav {
+      position: absolute;
+      right: -68px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .short-nav-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      color: white;
+    }
+    .short-nav-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .short-nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+    /* Right Panel */
+    .shorts-right-panel {
+      width: 280px;
+      padding: 24px 16px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    @media (min-width: 1100px) {
+      .shorts-right-panel { display: block; }
+      .short-actions { right: -68px; }
+    }
+
+    @media (max-width: 700px) {
+      .short-player-wrap {
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 0;
+        height: calc(100vh - var(--header-height));
+        max-height: none;
+      }
+      .short-actions { right: 8px; }
+      .short-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <button class="icon-btn" onclick="history.back()" title="Back">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <a class="header-logo" href="index.html">
+    <div class="logo-icon">▶</div>
+    <span class="logo-text">View<span>Tube</span></span>
+  </a>
+  <div style="flex:1; display:flex; align-items:center; gap:8px; padding: 0 16px;">
+    <span style="font-size:18px;font-weight:800;color:var(--text-primary);">⚡ Shorts</span>
+  </div>
+  <div class="header-actions">
+    <a href="upload.html" class="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Upload
+    </a>
+  </div>
+</header>
+
+<div class="shorts-layout">
+  <!-- Shorts Feed -->
+  <div class="shorts-feed">
+    <div class="short-player-wrap" id="short-player" onclick="toggleShortPlay()">
+      <img class="short-thumbnail" id="short-thumb" src="" alt="">
+
+      <!-- Overlay -->
+      <div class="short-overlay">
+        <!-- Progress bars -->
+        <div class="short-progress-bars" id="short-progress-bars"></div>
+
+        <!-- Channel info -->
+        <div class="short-channel">
+          <div class="short-ch-avatar"><img id="short-ch-avatar" src="" alt=""></div>
+          <div class="short-ch-name" id="short-ch-name"></div>
+          <button class="short-sub-btn" id="short-sub-btn" onclick="toggleShortSub(event)">Follow</button>
+        </div>
+
+        <div class="short-title" id="short-title"></div>
+        <div class="short-views" id="short-views"></div>
+      </div>
+
+      <!-- Center play button -->
+      <div class="short-center-btn">
+        <div class="short-play-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+      </div>
+
+      <!-- Side Actions -->
+      <div class="short-actions" onclick="e => e.stopPropagation()">
+        <div class="short-action-btn" id="short-like-btn" onclick="toggleShortLike(event)">
+          <div class="short-action-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/></svg>
+          </div>
+          <span class="short-action-label" id="short-like-count">0</span>
+        </div>
+        <div class="short-action-btn" onclick="showToast('Comment feature coming!','info');event.stopPropagation()">
+          <div class="short-action-icon">💬</div>
+          <span class="short-action-label">Comment</span>
+        </div>
+        <div class="short-action-btn" onclick="showToast('Link copied!','success');event.stopPropagation()">
+          <div class="short-action-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </div>
+          <span class="short-action-label">Share</span>
+        </div>
+        <div class="short-action-btn" onclick="showToast('Saved!','success');event.stopPropagation()">
+          <div class="short-action-icon">🔖</div>
+          <span class="short-action-label">Save</span>
+        </div>
+      </div>
+
+      <!-- Nav (appears outside on larger screens) -->
+      <div class="short-nav" onclick="e => e.stopPropagation()">
+        <button class="short-nav-btn" id="prev-btn" onclick="prevShort(event)" title="Previous">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+        <button class="short-nav-btn" id="next-btn" onclick="nextShort(event)" title="Next">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="global-toast"></div>
+
+<script src="js/viewtube.js"></script>
+<script>
+  let shorts = [], channels = [], currentIdx = 0;
+  let isPlaying = true, progressTimer = null, shortProgress = 0;
+  const SHORT_DURATION = 30; // seconds simulated
+
+  async function init() {
+    [shorts, channels] = await Promise.all([loadJSON('shorts.json'), loadJSON('channels.json')]);
+    buildProgressBars();
+    loadShort(0);
+    startProgress();
+
+    // Keyboard nav
+    document.addEventListener('keydown', e => {
+      if (e.code === 'ArrowDown' || e.code === 'ArrowRight') nextShort();
+      if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') prevShort();
+      if (e.code === 'Space') { e.preventDefault(); toggleShortPlay(); }
+    });
+
+    // Touch swipe
+    let touchStartY = 0;
+    document.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; });
+    document.addEventListener('touchend', e => {
+      const diff = touchStartY - e.changedTouches[0].clientY;
+      if (Math.abs(diff) > 60) { if (diff > 0) nextShort(); else prevShort(); }
+    });
+  }
+
+  function buildProgressBars() {
+    const container = document.getElementById('short-progress-bars');
+    container.innerHTML = '';
+    shorts.forEach((_, i) => {
+      const bar = document.createElement('div');
+      bar.className = 'short-progress-bar';
+      bar.id = `bar-${i}`;
+      bar.innerHTML = `<div class="short-progress-fill" id="fill-${i}"></div>`;
+      container.appendChild(bar);
+    });
+  }
+
+  function loadShort(idx) {
+    if (!shorts[idx]) return;
+    currentIdx = idx;
+    const s = shorts[idx];
+    const ch = channels.find(c => c.id === s.channelId);
+
+    document.getElementById('short-thumb').src = s.thumbnail;
+    document.getElementById('short-title').textContent = s.title;
+    document.getElementById('short-views').textContent = `${s.viewsFormatted} views · ${s.uploadedAgo}`;
+    document.getElementById('short-like-count').textContent = formatViews(s.likes);
+    document.getElementById('short-like-btn').classList.remove('liked');
+
+    if (ch) {
+      document.getElementById('short-ch-avatar').src = ch.avatar;
+      document.getElementById('short-ch-name').innerHTML = escapeHTML(ch.name) + ' ' + getBadgeHTML(ch);
+    }
+
+    document.getElementById('prev-btn').disabled = idx === 0;
+    document.getElementById('next-btn').disabled = idx === shorts.length - 1;
+
+    // Reset progress bars
+    shorts.forEach((_, i) => {
+      const bar = document.getElementById(`bar-${i}`);
+      const fill = document.getElementById(`fill-${i}`);
+      bar.classList.remove('done', 'active');
+      fill.style.width = '0%';
+      if (i < idx) bar.classList.add('done');
+      if (i === idx) bar.classList.add('active');
+    });
+
+    shortProgress = 0;
+  }
+
+  function startProgress() {
+    clearInterval(progressTimer);
+    progressTimer = setInterval(() => {
+      if (!isPlaying) return;
+      shortProgress += (100 / SHORT_DURATION) * 0.1;
+      if (shortProgress >= 100) {
+        shortProgress = 100;
+        document.getElementById(`fill-${currentIdx}`).style.width = '100%';
+        nextShort();
+        return;
+      }
+      const fill = document.getElementById(`fill-${currentIdx}`);
+      if (fill) fill.style.width = shortProgress + '%';
+    }, 100);
+  }
+
+  function toggleShortPlay() {
+    isPlaying = !isPlaying;
+    document.getElementById('short-player').classList.toggle('paused', !isPlaying);
+    showToast(isPlaying ? '' : 'Paused');
+  }
+
+  function nextShort(e) {
+    if (e) e.stopPropagation();
+    if (currentIdx < shorts.length - 1) {
+      document.getElementById(`bar-${currentIdx}`).classList.add('done');
+      document.getElementById(`fill-${currentIdx}`).style.width = '100%';
+      loadShort(currentIdx + 1);
+    } else {
+      showToast('You\'ve reached the end of Shorts!', 'info');
+    }
+  }
+
+  function prevShort(e) {
+    if (e) e.stopPropagation();
+    if (currentIdx > 0) loadShort(currentIdx - 1);
+  }
+
+  function toggleShortLike(e) {
+    e.stopPropagation();
+    const btn = document.getElementById('short-like-btn');
+    const isLiked = btn.classList.toggle('liked');
+    const base = shorts[currentIdx].likes;
+    document.getElementById('short-like-count').textContent = formatViews(base + (isLiked ? 1 : 0));
+    showToast(isLiked ? '❤️ Liked!' : 'Like removed', isLiked ? 'success' : 'info');
+  }
+
+  function toggleShortSub(e) {
+    e.stopPropagation();
+    const btn = document.getElementById('short-sub-btn');
+    const isSub = btn.classList.toggle('subscribed');
+    btn.textContent = isSub ? 'Following ✓' : 'Follow';
+    showToast(isSub ? 'Following!' : 'Unfollowed', isSub ? 'success' : 'info');
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload – ViewTube Studio</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .upload-page { max-width: 860px; margin: 0 auto; }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+    .page-title {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .page-sub { color: var(--text-secondary); font-size: 14px; }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg);
+      padding: 60px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: var(--bg-card);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .upload-zone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(124,90,255,0.05), transparent 70%);
+      pointer-events: none;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(124,90,255,0.05);
+    }
+    .upload-zone.drag-over { transform: scale(1.01); }
+
+    .upload-icon {
+      font-size: 52px;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .upload-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .upload-sub { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+    .upload-limits { font-size: 12px; color: var(--text-muted); margin-top: 12px; }
+
+    #file-input { display: none; }
+
+    /* Progress */
+    .upload-progress {
+      display: none;
+      margin-bottom: 32px;
+    }
+    .upload-progress.active { display: block; }
+    .progress-bar-wrap {
+      background: var(--bg-card);
+      border-radius: 20px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 20px;
+      width: 0%;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .progress-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Form */
+    .upload-form {
+      display: grid;
+      gap: 20px;
+    }
+
+    .form-row { display: grid; gap: 20px; }
+    .form-row.two-col { grid-template-columns: 1fr 1fr; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color var(--transition);
+      width: 100%;
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+    .form-select { cursor: pointer; }
+
+    /* Thumbnail Upload */
+    .thumb-upload {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      background: var(--bg-card);
+      overflow: hidden;
+      position: relative;
+    }
+    .thumb-upload:hover { border-color: var(--accent); }
+    .thumb-upload img { width: 100%; height: 100%; object-fit: cover; }
+    .thumb-placeholder { color: var(--text-muted); font-size: 13px; text-align: center; padding: 16px; }
+    .thumb-placeholder span { font-size: 28px; display: block; margin-bottom: 6px; }
+
+    /* Tags input */
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      min-height: 42px;
+      cursor: text;
+      transition: border-color var(--transition);
+    }
+    .tags-wrap:focus-within { border-color: var(--accent); }
+    .tag-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(124,90,255,0.15);
+      color: var(--accent);
+      border-radius: 12px;
+      padding: 2px 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .tag-remove {
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      color: var(--text-muted);
+    }
+    .tag-remove:hover { color: var(--danger); }
+    .tag-input {
+      border: none;
+      background: transparent;
+      color: var(--text-primary);
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      outline: none;
+      min-width: 80px;
+    }
+    .tag-input::placeholder { color: var(--text-muted); }
+
+    /* Visibility Toggle */
+    .visibility-options {
+      display: flex;
+      gap: 10px;
+    }
+    .vis-option {
+      flex: 1;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-align: center;
+    }
+    .vis-option:hover { border-color: var(--accent); }
+    .vis-option.selected { border-color: var(--accent); background: rgba(124,90,255,0.1); }
+    .vis-icon { font-size: 22px; margin-bottom: 6px; }
+    .vis-name { font-size: 13px; font-weight: 700; }
+    .vis-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Submit Row */
+    .submit-row {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    @media (max-width: 640px) {
+      .form-row.two-col { grid-template-columns: 1fr; }
+      .visibility-options { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <button class="icon-btn" onclick="history.back()" title="Back">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <a class="header-logo" href="index.html">
+    <div class="logo-icon">▶</div>
+    <span class="logo-text">View<span>Tube</span></span>
+  </a>
+  <div style="flex:1;"></div>
+  <div class="header-actions">
+    <a href="studio.html" class="btn btn-secondary">Studio</a>
+  </div>
+</header>
+
+<main class="main" style="margin-left:0;">
+  <div class="upload-page">
+    <div class="page-header">
+      <div class="page-title">Upload Video</div>
+      <div class="page-sub">Share your content with the ViewTube community</div>
+    </div>
+
+    <!-- Drop Zone -->
+    <div class="upload-zone" id="upload-zone">
+      <span class="upload-icon">🎬</span>
+      <div class="upload-title">Drag & drop your video here</div>
+      <div class="upload-sub">or click to browse from your device</div>
+      <button class="btn btn-primary">Select Video File</button>
+      <div class="upload-limits">MP4, MOV, AVI, MKV, WebM · Max 10GB · Up to 12 hours</div>
+      <input type="file" id="file-input" accept="video/*">
+    </div>
+
+    <!-- Upload Progress -->
+    <div class="upload-progress" id="upload-progress">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-label">
+        <span id="progress-text">Uploading…</span>
+        <span id="progress-pct">0%</span>
+      </div>
+    </div>
+
+    <!-- Video Details Form -->
+    <div class="upload-form" id="upload-form">
+
+      <div class="form-row two-col">
+        <!-- Title -->
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Video Title *</label>
+          <input class="form-input" type="text" placeholder="Give your video an engaging title…" id="vid-title" maxlength="100">
+          <span style="font-size:11px;color:var(--text-muted);text-align:right;" id="title-count">0/100</span>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" placeholder="Tell viewers about your video. Timestamps, links, and credits can go here." id="vid-desc" maxlength="5000" rows="4"></textarea>
+        </div>
+
+        <!-- Thumbnail -->
+        <div class="form-group">
+          <label class="form-label">Custom Thumbnail</label>
+          <div class="thumb-upload" id="thumb-upload">
+            <div class="thumb-placeholder">
+              <span>🖼️</span>
+              Click to upload thumbnail
+              <br><span style="font-size:10px;">JPG/PNG · 1280×720px recommended</span>
+            </div>
+          </div>
+          <input type="file" id="thumb-input" accept="image/*" style="display:none;">
+        </div>
+
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- Category -->
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-select" id="vid-category">
+              <option value="">Select a category…</option>
+              <option value="Technology">Technology</option>
+              <option value="Gaming">Gaming</option>
+              <option value="Music">Music</option>
+              <option value="Science">Science</option>
+              <option value="Food">Food & Cooking</option>
+              <option value="Wellness">Wellness</option>
+              <option value="Education">Education</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Sports">Sports</option>
+              <option value="Travel">Travel</option>
+            </select>
+          </div>
+
+          <!-- Language -->
+          <div class="form-group">
+            <label class="form-label">Language</label>
+            <select class="form-select">
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="ja">Japanese</option>
+              <option value="pt">Portuguese</option>
+            </select>
+          </div>
+
+          <!-- Short? -->
+          <div class="form-group">
+            <label class="form-label">Content Type</label>
+            <select class="form-select" id="content-type">
+              <option value="video">Regular Video</option>
+              <option value="short">Short (≤ 60 seconds)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="form-group">
+        <label class="form-label">Tags</label>
+        <div class="tags-wrap" id="tags-wrap">
+          <input class="tag-input" id="tag-input" placeholder="Add tags and press Enter…">
+        </div>
+        <span style="font-size:11px;color:var(--text-muted);">Press Enter or comma to add a tag</span>
+      </div>
+
+      <!-- Visibility -->
+      <div class="form-group">
+        <label class="form-label">Visibility</label>
+        <div class="visibility-options">
+          <div class="vis-option selected" data-vis="public">
+            <div class="vis-icon">🌍</div>
+            <div class="vis-name">Public</div>
+            <div class="vis-desc">Everyone can see</div>
+          </div>
+          <div class="vis-option" data-vis="unlisted">
+            <div class="vis-icon">🔗</div>
+            <div class="vis-name">Unlisted</div>
+            <div class="vis-desc">Only with link</div>
+          </div>
+          <div class="vis-option" data-vis="private">
+            <div class="vis-icon">🔒</div>
+            <div class="vis-name">Private</div>
+            <div class="vis-desc">Only you</div>
+          </div>
+          <div class="vis-option" data-vis="scheduled">
+            <div class="vis-icon">📅</div>
+            <div class="vis-name">Scheduled</div>
+            <div class="vis-desc">Set a date</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="submit-row">
+        <button class="btn btn-ghost" onclick="history.back()">Cancel</button>
+        <button class="btn btn-secondary" onclick="saveDraft()">Save Draft</button>
+        <button class="btn btn-primary" onclick="publishVideo()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          Publish Video
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="global-toast"></div>
+
+<script src="js/viewtube.js"></script>
+<script>
+  // --- Upload Zone ---
+  const zone = document.getElementById('upload-zone');
+  const fileInput = document.getElementById('file-input');
+
+  zone.addEventListener('click', () => fileInput.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file?.type.startsWith('video/')) handleFileSelect(file);
+    else showToast('Please drop a video file', 'error');
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) handleFileSelect(fileInput.files[0]);
+  });
+
+  function handleFileSelect(file) {
+    const sizeGB = file.size / (1024 ** 3);
+    if (sizeGB > 10) { showToast('File too large (max 10GB)', 'error'); return; }
+    zone.style.display = 'none';
+    simulateUpload(file.name);
+  }
+
+  function simulateUpload(name) {
+    const progress = document.getElementById('upload-progress');
+    const fill = document.getElementById('progress-fill');
+    const text = document.getElementById('progress-text');
+    const pct = document.getElementById('progress-pct');
+    progress.classList.add('active');
+
+    let p = 0;
+    const labels = ['Processing file…', 'Uploading…', 'Analyzing video…', 'Almost done…', 'Finalizing…'];
+    const interval = setInterval(() => {
+      p += Math.random() * 8 + 2;
+      if (p >= 100) { p = 100; clearInterval(interval); text.textContent = '✅ Upload complete!'; showToast('Video uploaded successfully!', 'success'); setTimeout(() => progress.style.opacity = '0.5', 500); }
+      else text.textContent = labels[Math.floor(p / 25)] || 'Uploading…';
+      fill.style.width = p + '%';
+      pct.textContent = Math.floor(p) + '%';
+    }, 150);
+
+    // Pre-fill title from filename
+    const titleInput = document.getElementById('vid-title');
+    titleInput.value = name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+    updateTitleCount();
+  }
+
+  // --- Title counter ---
+  const titleInput = document.getElementById('vid-title');
+  function updateTitleCount() {
+    document.getElementById('title-count').textContent = `${titleInput.value.length}/100`;
+  }
+  titleInput.addEventListener('input', updateTitleCount);
+
+  // --- Thumbnail ---
+  document.getElementById('thumb-upload').addEventListener('click', () => document.getElementById('thumb-input').click());
+  document.getElementById('thumb-input').addEventListener('change', function() {
+    if (this.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const div = document.getElementById('thumb-upload');
+        div.innerHTML = `<img src="${e.target.result}" alt="Thumbnail">`;
+      };
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+
+  // --- Tags ---
+  const tagInput = document.getElementById('tag-input');
+  const tagsWrap = document.getElementById('tags-wrap');
+  let tags = [];
+
+  tagInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = tagInput.value.trim().replace(/,/g, '');
+      if (val && !tags.includes(val) && tags.length < 15) {
+        tags.push(val);
+        renderTags();
+      }
+      tagInput.value = '';
+    }
+    if (e.key === 'Backspace' && !tagInput.value && tags.length) {
+      tags.pop();
+      renderTags();
+    }
+  });
+
+  tagsWrap.addEventListener('click', () => tagInput.focus());
+
+  function renderTags() {
+    document.querySelectorAll('.tag-chip').forEach(c => c.remove());
+    tags.forEach((tag, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${tag}<span class="tag-remove" onclick="removeTag(${i})">×</span>`;
+      tagsWrap.insertBefore(chip, tagInput);
+    });
+  }
+
+  function removeTag(i) { tags.splice(i, 1); renderTags(); }
+
+  // --- Visibility ---
+  document.querySelectorAll('.vis-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.vis-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+
+  // --- Publish / Save ---
+  function publishVideo() {
+    const title = document.getElementById('vid-title').value.trim();
+    if (!title) { showToast('Please add a title for your video', 'error'); document.getElementById('vid-title').focus(); return; }
+    showToast('🎉 Video published successfully!', 'success');
+    setTimeout(() => { window.location.href = 'studio.html'; }, 1500);
+  }
+
+  function saveDraft() {
+    showToast('💾 Draft saved', 'success');
+  }
+</script>
+</body>
+</html>

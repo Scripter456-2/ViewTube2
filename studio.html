@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ViewTube Studio</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .studio-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - var(--header-height));
+    }
+
+    /* Studio Sidebar */
+    .studio-sidebar {
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      padding: 20px 0;
+      position: sticky;
+      top: var(--header-height);
+      height: calc(100vh - var(--header-height));
+      overflow-y: auto;
+    }
+
+    .studio-channel-info {
+      padding: 16px 20px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 8px;
+    }
+
+    .studio-channel-avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    .studio-channel-name { font-size: 15px; font-weight: 700; }
+    .studio-channel-handle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .studio-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+    }
+    .studio-nav-item:hover { color: var(--text-primary); background: var(--bg-hover); }
+    .studio-nav-item.active { color: var(--accent); background: rgba(124,90,255,0.08); border-left-color: var(--accent); }
+
+    /* Studio Content */
+    .studio-content { padding: 28px; overflow-y: auto; }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .stat-card:hover { border-color: var(--accent); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .stat-card.views::before { background: linear-gradient(90deg, var(--accent), #5ab4ff); }
+    .stat-card.subs::before { background: linear-gradient(90deg, var(--accent-2), #fbbf24); }
+    .stat-card.likes::before { background: linear-gradient(90deg, #4ade80, #22d3ee); }
+    .stat-card.revenue::before { background: linear-gradient(90deg, #fbbf24, #f97316); }
+
+    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+    .stat-change {
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .stat-change.up { color: var(--success); }
+    .stat-change.down { color: var(--danger); }
+
+    /* Chart Area */
+    .chart-section { margin-bottom: 28px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title-sm { font-size: 16px; font-weight: 700; }
+
+    .chart-timeframe {
+      display: flex;
+      gap: 4px;
+    }
+    .time-btn {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      transition: all var(--transition);
+      font-family: 'Outfit', sans-serif;
+    }
+    .time-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .time-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* SVG Chart */
+    .chart-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .chart-svg { width: 100%; height: 200px; }
+
+    .chart-tooltip {
+      position: absolute;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 12px;
+      pointer-events: none;
+      display: none;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+
+    /* Videos Table */
+    .videos-table-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--bg-hover);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      align-items: center;
+      transition: background var(--transition);
+      cursor: pointer;
+    }
+    .table-row:hover { background: var(--bg-hover); }
+    .table-row:last-child { border-bottom: none; }
+
+    .table-video {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .table-thumb {
+      width: 72px;
+      aspect-ratio: 16/9;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--bg-hover);
+    }
+    .table-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .table-vid-title {
+      font-size: 13px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .table-vid-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .table-val { font-size: 14px; font-weight: 600; }
+    .table-sub { font-size: 11px; color: var(--text-muted); }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .status-public { background: rgba(74,222,128,0.15); color: var(--success); }
+    .status-private { background: rgba(248,113,113,0.15); color: var(--danger); }
+    .status-draft { background: rgba(251,191,36,0.15); color: var(--warning); }
+
+    /* Top Sources */
+    .sources-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .source-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .source-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .source-item:last-child { border-bottom: none; }
+
+    .source-bar-wrap { flex: 1; }
+    .source-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .source-bar {
+      height: 6px;
+      background: var(--bg-hover);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .source-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 3px;
+    }
+    .source-pct { font-size: 13px; font-weight: 700; color: var(--accent); min-width: 40px; text-align: right; }
+
+    @media (max-width: 1100px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .sources-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .studio-layout { grid-template-columns: 1fr; }
+      .studio-sidebar { display: none; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .table-header, .table-row { grid-template-columns: 1fr 1fr 80px; }
+      .table-header > *:nth-child(3), .table-row > *:nth-child(3),
+      .table-header > *:nth-child(4), .table-row > *:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <a class="header-logo" href="index.html">
+    <div class="logo-icon">▶</div>
+    <span class="logo-text">View<span>Tube</span></span>
+  </a>
+  <div style="flex:1;padding:0 20px;">
+    <span style="font-size:15px;font-weight:800;color:var(--text-secondary);">Studio</span>
+  </div>
+  <div class="header-actions">
+    <a href="upload.html" class="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Upload
+    </a>
+    <a href="index.html" class="btn btn-secondary">← Back to ViewTube</a>
+  </div>
+</header>
+
+<div class="studio-layout" style="margin-top: var(--header-height);">
+  <!-- Studio Sidebar -->
+  <div class="studio-sidebar">
+    <div class="studio-channel-info">
+      <div class="studio-channel-avatar">V</div>
+      <div class="studio-channel-name">Your Channel</div>
+      <div class="studio-channel-handle">@yourchannel</div>
+    </div>
+
+    <a class="studio-nav-item active" href="studio.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Dashboard
+    </a>
+    <a class="studio-nav-item" href="#" onclick="showToast('Videos tab coming soon!','info');return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><polygon points="10,8 16,12 10,16"/></svg>
+      Videos
+    </a>
+    <a class="studio-nav-item" href="#" onclick="showToast('Analytics tab','info');return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+      Analytics
+    </a>
+    <a class="studio-nav-item" href="#" onclick="showToast('Comments tab coming soon!','info');return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Comments
+    </a>
+    <a class="studio-nav-item" href="#" onclick="showToast('Monetization tab coming soon!','info');return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Monetization
+    </a>
+    <a class="studio-nav-item" href="#" onclick="showToast('Customization tab coming soon!','info');return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Customization
+    </a>
+    <a class="studio-nav-item" href="#" onclick="showToast('Settings tab coming soon!','info');return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Settings
+    </a>
+  </div>
+
+  <!-- Studio Content -->
+  <div class="studio-content">
+    <div style="margin-bottom:28px;">
+      <div style="font-size:22px;font-weight:800;margin-bottom:4px;">Channel Analytics</div>
+      <div style="color:var(--text-muted);font-size:13px;">Last 28 days · Updated hourly</div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card views">
+        <div class="stat-label">Total Views</div>
+        <div class="stat-value">847.2K</div>
+        <div class="stat-change up">▲ 23.4% vs last period</div>
+      </div>
+      <div class="stat-card subs">
+        <div class="stat-label">Subscribers</div>
+        <div class="stat-value">12,480</div>
+        <div class="stat-change up">▲ +842 new</div>
+      </div>
+      <div class="stat-card likes">
+        <div class="stat-label">Watch Time (hrs)</div>
+        <div class="stat-value">34.1K</div>
+        <div class="stat-change up">▲ 17.8%</div>
+      </div>
+      <div class="stat-card revenue">
+        <div class="stat-label">Revenue (est.)</div>
+        <div class="stat-value">$1,248</div>
+        <div class="stat-change down">▼ 4.2%</div>
+      </div>
+    </div>
+
+    <!-- Views Chart -->
+    <div class="chart-section">
+      <div class="section-header">
+        <div class="section-title-sm">Views Over Time</div>
+        <div class="chart-timeframe">
+          <button class="time-btn" onclick="setTimeframe(this,'7d')">7d</button>
+          <button class="time-btn active" onclick="setTimeframe(this,'28d')">28d</button>
+          <button class="time-btn" onclick="setTimeframe(this,'90d')">90d</button>
+          <button class="time-btn" onclick="setTimeframe(this,'1y')">1y</button>
+        </div>
+      </div>
+      <div class="chart-wrap" style="position:relative;">
+        <canvas id="views-chart" style="width:100%;height:220px;"></canvas>
+        <div class="chart-tooltip" id="chart-tooltip"></div>
+      </div>
+    </div>
+
+    <!-- Traffic Sources + Geography -->
+    <div class="sources-grid">
+      <div class="source-card">
+        <div class="section-title-sm" style="margin-bottom:14px;">Traffic Sources</div>
+        <div class="source-item">
+          <div class="source-bar-wrap">
+            <div class="source-label">ViewTube Search</div>
+            <div class="source-bar"><div class="source-bar-fill" style="width:54%"></div></div>
+          </div>
+          <div class="source-pct">54%</div>
+        </div>
+        <div class="source-item">
+          <div class="source-bar-wrap">
+            <div class="source-label">Recommended</div>
+            <div class="source-bar"><div class="source-bar-fill" style="width:27%"></div></div>
+          </div>
+          <div class="source-pct">27%</div>
+        </div>
+        <div class="source-item">
+          <div class="source-bar-wrap">
+            <div class="source-label">External (Social)</div>
+            <div class="source-bar"><div class="source-bar-fill" style="width:12%"></div></div>
+          </div>
+          <div class="source-pct">12%</div>
+        </div>
+        <div class="source-item">
+          <div class="source-bar-wrap">
+            <div class="source-label">Direct / Other</div>
+            <div class="source-bar"><div class="source-bar-fill" style="width:7%"></div></div>
+          </div>
+          <div class="source-pct">7%</div>
+        </div>
+      </div>
+
+      <div class="source-card">
+        <div class="section-title-sm" style="margin-bottom:14px;">Top Countries</div>
+        <div class="source-item">
+          <div class="source-bar-wrap">
+            <div class="source-label">🇺🇸 United States</div>
+            <div class="source-bar"><div class="source-bar-fill" style="width:42%"></div></div>
+          </div>
+          <div class="source-pct">42%</div>
+        </div>
+        <div class="source-item">
+          <div class="source-bar-wrap">
+            <div class="source-label">🇬🇧 United Kingdom</div>
+            <div class="source-bar"><div class="source-bar-fill" style="width:18%"></div></div>
+          </div>
+          <div class="source-pct">18%</div>
+        </div>
+        <div class="source-item">
+          <div class="source-bar-wrap">
+            <div class="source-label">🇮🇳 India</div>
+            <div class="source-bar"><div class="source-bar-fill" style="width:14%"></div></div>
+          </div>
+          <div class="source-pct">14%</div>
+        </div>
+        <div class="source-item">
+          <div class="source-bar-wrap">
+            <div class="source-label">🌍 Other</div>
+            <div class="source-bar"><div class="source-bar-fill" style="width:26%"></div></div>
+          </div>
+          <div class="source-pct">26%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Videos Table -->
+    <div class="section-header">
+      <div class="section-title-sm">Your Videos</div>
+      <a href="upload.html" class="btn btn-primary" style="font-size:13px;">+ Upload New</a>
+    </div>
+
+    <div class="videos-table-wrap">
+      <div class="table-header">
+        <span>Video</span>
+        <span>Views</span>
+        <span>Likes</span>
+        <span>Watch Time</span>
+        <span>Status</span>
+      </div>
+      <div id="videos-table"></div>
+    </div>
+
+    <!-- Empty state for new creators -->
+    <div style="margin-top:28px;text-align:center;padding:40px;background:var(--bg-card);border:1px dashed var(--border);border-radius:var(--radius);">
+      <div style="font-size:40px;margin-bottom:12px;">🚀</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Ready to grow your channel?</div>
+      <div style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">Upload your first video and start building your audience.</div>
+      <a href="upload.html" class="btn btn-primary">Upload Your First Video</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="global-toast"></div>
+
+<script src="js/viewtube.js"></script>
+<script>
+  // --- Chart ---
+  function drawChart(period) {
+    const canvas = document.getElementById('views-chart');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.offsetWidth;
+    const H = 220;
+    canvas.width = W * devicePixelRatio;
+    canvas.height = H * devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+
+    // Generate fake data
+    const points = period === '7d' ? 7 : period === '28d' ? 28 : period === '90d' ? 30 : 12;
+    const data = Array.from({length: points}, (_, i) => {
+      const base = 20000 + Math.sin(i * 0.4) * 10000;
+      return Math.max(5000, base + (Math.random() - 0.5) * 15000);
+    });
+
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const pad = { top: 20, right: 16, bottom: 30, left: 60 };
+    const cW = W - pad.left - pad.right;
+    const cH = H - pad.top - pad.bottom;
+
+    const xScale = i => pad.left + (i / (data.length - 1)) * cW;
+    const yScale = v => pad.top + cH - ((v - min) / (max - min || 1)) * cH;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.top + (cH / 4) * i;
+      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+      // Y labels
+      const val = max - (max - min) * (i / 4);
+      ctx.fillStyle = 'rgba(152,152,184,0.7)';
+      ctx.font = '11px Outfit, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(formatK(val), pad.left - 6, y + 4);
+    }
+
+    // Gradient fill
+    const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+    gradient.addColorStop(0, 'rgba(124,90,255,0.4)');
+    gradient.addColorStop(1, 'rgba(124,90,255,0)');
+
+    // Area
+    ctx.beginPath();
+    ctx.moveTo(xScale(0), yScale(data[0]));
+    for (let i = 1; i < data.length; i++) {
+      const xc = (xScale(i - 1) + xScale(i)) / 2;
+      const yc = (yScale(data[i - 1]) + yScale(data[i])) / 2;
+      ctx.quadraticCurveTo(xScale(i - 1), yScale(data[i - 1]), xc, yc);
+    }
+    ctx.quadraticCurveTo(xScale(data.length - 2), yScale(data[data.length - 2]), xScale(data.length - 1), yScale(data[data.length - 1]));
+    ctx.lineTo(xScale(data.length - 1), pad.top + cH);
+    ctx.lineTo(xScale(0), pad.top + cH);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(xScale(0), yScale(data[0]));
+    for (let i = 1; i < data.length; i++) {
+      const xc = (xScale(i - 1) + xScale(i)) / 2;
+      const yc = (yScale(data[i - 1]) + yScale(data[i])) / 2;
+      ctx.quadraticCurveTo(xScale(i - 1), yScale(data[i - 1]), xc, yc);
+    }
+    ctx.quadraticCurveTo(xScale(data.length - 2), yScale(data[data.length - 2]), xScale(data.length - 1), yScale(data[data.length - 1]));
+    ctx.strokeStyle = '#7c5aff';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Dots
+    data.forEach((v, i) => {
+      ctx.beginPath();
+      ctx.arc(xScale(i), yScale(v), 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#7c5aff';
+      ctx.fill();
+      ctx.strokeStyle = '#0a0a0f';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+
+    // X labels
+    ctx.fillStyle = 'rgba(152,152,184,0.7)';
+    ctx.font = '11px Outfit, sans-serif';
+    ctx.textAlign = 'center';
+    const step = Math.max(1, Math.floor(data.length / 6));
+    for (let i = 0; i < data.length; i += step) {
+      ctx.fillText(`Day ${i + 1}`, xScale(i), H - 6);
+    }
+  }
+
+  function formatK(n) {
+    if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+    return Math.round(n);
+  }
+
+  function setTimeframe(btn, period) {
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    drawChart(period);
+  }
+
+  // --- Videos Table ---
+  async function loadVideosTable() {
+    const videos = await loadJSON('videos.json');
+    const channels = await loadJSON('channels.json');
+    const table = document.getElementById('videos-table');
+    
+    videos.slice(0, 5).forEach(v => {
+      const row = document.createElement('div');
+      row.className = 'table-row';
+      row.innerHTML = `
+        <div class="table-video">
+          <div class="table-thumb"><img src="${v.thumbnail}" alt="" loading="lazy"></div>
+          <div>
+            <div class="table-vid-title">${escapeHTML(v.title)}</div>
+            <div class="table-vid-date">${v.uploadedAgo}</div>
+          </div>
+        </div>
+        <div>
+          <div class="table-val">${formatViews(v.views)}</div>
+          <div class="table-sub">views</div>
+        </div>
+        <div>
+          <div class="table-val">${formatViews(v.likes)}</div>
+          <div class="table-sub">likes</div>
+        </div>
+        <div>
+          <div class="table-val">${Math.floor(v.views * 3.2 / 60000)}K hrs</div>
+          <div class="table-sub">watch time</div>
+        </div>
+        <div>
+          <span class="status-badge status-public">Public</span>
+        </div>
+      `;
+      row.addEventListener('click', () => { window.location.href = `watch.html?v=${v.id}`; });
+      table.appendChild(row);
+    });
+  }
+
+  function init() {
+    setTimeout(() => drawChart('28d'), 100);
+    window.addEventListener('resize', () => {
+      const activeBtn = document.querySelector('.time-btn.active');
+      const period = activeBtn?.textContent.trim() || '28d';
+      drawChart(period);
+    });
+    loadVideosTable();
+  }
+
+  init();
+</script>
+</body>
+</html>

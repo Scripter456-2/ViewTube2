@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trending – ViewTube</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .trending-hero {
+      background: linear-gradient(135deg, rgba(255,90,124,0.15), rgba(124,90,255,0.1));
+      border: 1px solid rgba(255,90,124,0.2);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .trending-hero-icon {
+      font-size: 48px;
+      line-height: 1;
+    }
+    .trending-hero-title {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #ff5a7c, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .trending-hero-sub { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+    
+    .trending-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+    }
+    .trending-tabs::-webkit-scrollbar { display: none; }
+    
+    .trend-tab {
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .trend-tab:hover { border-color: var(--accent-2); color: var(--accent-2); }
+    .trend-tab.active {
+      background: linear-gradient(135deg, var(--accent-2), #ff8c00);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 0 16px var(--accent-2-glow);
+    }
+    
+    /* Trending List View */
+    .trending-list { display: flex; flex-direction: column; gap: 0; }
+    
+    .trending-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background var(--transition);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .trending-item:hover { background: var(--bg-hover); }
+    .trending-item:last-child { border-bottom: none; }
+    
+    .rank-num {
+      font-size: 28px;
+      font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      min-width: 40px;
+      text-align: center;
+      letter-spacing: -2px;
+    }
+    .rank-num.top3 {
+      background: linear-gradient(135deg, var(--accent-2), #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .trending-thumb {
+      width: 180px;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+      background: var(--bg-card);
+    }
+    .trending-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .trending-duration {
+      position: absolute;
+      bottom: 4px; right: 4px;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    
+    .trending-info { flex: 1; min-width: 0; }
+    .trending-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .trending-channel {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+    .trending-stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+    }
+    .stat-pill.views { color: var(--accent); background: rgba(124,90,255,0.1); }
+    .stat-pill.likes { color: var(--accent-2); background: rgba(255,90,124,0.1); }
+    
+    .trend-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .fire-badge {
+      background: linear-gradient(135deg, #ff5a7c, #fbbf24);
+      color: white;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+      .trending-thumb { width: 120px; }
+      .rank-num { font-size: 20px; min-width: 28px; }
+      .trending-title { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <button class="icon-btn" id="sidebar-toggle" title="Menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <a class="header-logo" href="index.html">
+    <div class="logo-icon">▶</div>
+    <span class="logo-text">View<span>Tube</span></span>
+  </a>
+  <div class="header-search">
+    <div class="search-input-wrap">
+      <input class="search-input" type="text" placeholder="Search videos, channels…">
+    </div>
+    <button class="search-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+  </div>
+  <div class="header-actions">
+    <a href="upload.html" class="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Upload
+    </a>
+  </div>
+</header>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <a class="sidebar-item" href="index.html" data-page="index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </a>
+    <a class="sidebar-item active" href="trending.html" data-page="trending.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      Trending
+    </a>
+    <a class="sidebar-item" href="watchshorts.html" data-page="watchshorts.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+      Shorts
+    </a>
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Creator</div>
+    <a class="sidebar-item" href="upload.html" data-page="upload.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
+      Upload Video
+    </a>
+    <a class="sidebar-item" href="studio.html" data-page="studio.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+      Studio
+    </a>
+  </div>
+</nav>
+
+<main class="main">
+  <!-- Hero -->
+  <div class="trending-hero">
+    <div class="trending-hero-icon">🔥</div>
+    <div>
+      <div class="trending-hero-title">Trending Now</div>
+      <div class="trending-hero-sub">The most-watched videos on ViewTube right now · Updated hourly</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="trending-tabs">
+    <button class="trend-tab active" data-cat="all">🔥 All</button>
+    <button class="trend-tab" data-cat="Technology">💻 Technology</button>
+    <button class="trend-tab" data-cat="Gaming">🎮 Gaming</button>
+    <button class="trend-tab" data-cat="Music">🎵 Music</button>
+    <button class="trend-tab" data-cat="Science">🔭 Science</button>
+    <button class="trend-tab" data-cat="Food">🍕 Food</button>
+  </div>
+
+  <div id="trending-list" class="trending-list"></div>
+</main>
+
+<div class="toast" id="global-toast"></div>
+
+<script src="js/viewtube.js"></script>
+<script>
+  let allVideos = [], allChannels = [], activeTab = 'all';
+
+  async function init() {
+    [allVideos, allChannels] = await Promise.all([loadJSON('videos.json'), loadJSON('channels.json')]);
+    renderTrending(allVideos);
+    initTabs();
+    initSidebarToggle();
+    initSearch();
+  }
+
+  function renderTrending(videos) {
+    // Sort by views descending
+    const sorted = [...videos].sort((a, b) => b.views - a.views);
+    const list = document.getElementById('trending-list');
+    list.innerHTML = '';
+    if (!sorted.length) {
+      list.innerHTML = `<div class="empty-state"><div class="icon">📉</div><h3>No trending videos</h3><p>Check back later!</p></div>`;
+      return;
+    }
+    sorted.forEach((video, i) => {
+      const channel = allChannels.find(c => c.id === video.channelId);
+      const rank = i + 1;
+      const el = document.createElement('div');
+      el.className = 'trending-item';
+      el.innerHTML = `
+        <div class="rank-num ${rank <= 3 ? 'top3' : ''}">${rank}</div>
+        <div class="trending-thumb">
+          <img src="${video.thumbnail}" alt="${escapeHTML(video.title)}" loading="lazy">
+          <span class="trending-duration">${video.duration}</span>
+        </div>
+        <div class="trending-info">
+          <div class="trending-title">${escapeHTML(video.title)}</div>
+          <div class="trending-channel">
+            ${channel ? `<img src="${channel.avatar}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;" alt="">` : ''}
+            ${channel ? escapeHTML(channel.name) : 'Unknown'} ${channel ? getBadgeHTML(channel) : ''}
+            <span style="margin-left:4px;">· ${video.uploadedAgo}</span>
+          </div>
+          <div class="trending-stats">
+            <span class="stat-pill views">👁 ${formatViews(video.views)} views</span>
+            <span class="stat-pill likes">❤️ ${formatViews(video.likes)}</span>
+            <span class="stat-pill">${video.category}</span>
+          </div>
+        </div>
+        <div class="trend-badge">
+          ${rank <= 3 ? `<span class="fire-badge">#${rank} 🔥</span>` : ''}
+        </div>
+      `;
+      el.addEventListener('click', () => { window.location.href = `watch.html?v=${video.id}`; });
+      list.appendChild(el);
+    });
+  }
+
+  function initTabs() {
+    document.querySelectorAll('.trend-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.trend-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeTab = tab.dataset.cat;
+        const filtered = activeTab === 'all' ? allVideos : allVideos.filter(v => v.category === activeTab);
+        renderTrending(filtered);
+      });
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ViewTube – Watch, Share, Discover</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .no-sidebar { margin-left: 0 !important; }
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(124,90,255,0.15) 0%, rgba(255,90,124,0.1) 100%);
+      border: 1px solid rgba(124,90,255,0.2);
+      border-radius: var(--radius-lg);
+      padding: 32px 36px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,90,255,0.2), transparent 70%);
+    }
+    .hero-title {
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--text-primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub { color: var(--text-secondary); font-size: 15px; margin-bottom: 20px; }
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    #video-grid-container { position: relative; min-height: 200px; }
+    .loading-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .skeleton-card { animation: pulse 1.5s ease-in-out infinite; }
+    .skeleton-thumb {
+      aspect-ratio: 16/9;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+    }
+    .skeleton-line {
+      height: 14px;
+      background: var(--bg-card);
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .skeleton-line.short { width: 60%; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <button class="icon-btn" id="sidebar-toggle" title="Menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <a class="header-logo" href="index.html">
+    <div class="logo-icon">▶</div>
+    <span class="logo-text">View<span>Tube</span></span>
+  </a>
+  <div class="header-search">
+    <div class="search-input-wrap">
+      <input class="search-input" type="text" placeholder="Search videos, channels…">
+    </div>
+    <button class="search-btn" title="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+  </div>
+  <div class="header-actions">
+    <a href="upload.html" class="btn btn-primary" style="gap:6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Upload
+    </a>
+    <a href="studio.html" class="btn btn-secondary">Studio</a>
+  </div>
+</header>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <a class="sidebar-item active" href="index.html" data-page="index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </a>
+    <a class="sidebar-item" href="trending.html" data-page="trending.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      Trending
+    </a>
+    <a class="sidebar-item" href="watchshorts.html" data-page="watchshorts.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="9" x2="15" y2="12"/><line x1="9" y1="15" x2="15" y2="12"/></svg>
+      Shorts
+    </a>
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Library</div>
+    <a class="sidebar-item" href="#" onclick="showToast('Sign in to view history','info');return false;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      History
+    </a>
+    <a class="sidebar-item" href="#" onclick="showToast('Sign in to see liked videos','info');return false;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/></svg>
+      Liked Videos
+    </a>
+    <a class="sidebar-item" href="#" onclick="showToast('Sign in to see subscriptions','info');return false;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 4s-2.5 2.5-10 2.5S2 4 2 4v10s2.5 2.5 10 2.5 10-2.5 10-2.5V4z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+      Subscriptions
+    </a>
+    <a class="sidebar-item" href="watchlater.html" onclick="showToast('Sign in to view Watch Later','info');return false;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
+      Watch Later
+    </a>
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Creator</div>
+    <a class="sidebar-item" href="upload.html" data-page="upload.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      Upload Video
+    </a>
+    <a class="sidebar-item" href="studio.html" data-page="studio.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Studio
+    </a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main">
+  <!-- Hero -->
+  <div class="hero-banner">
+    <div class="hero-title">Welcome to ViewTube ▶</div>
+    <div class="hero-sub">Discover videos from creators you'll love. No algorithm, just great content.</div>
+    <div class="hero-actions">
+      <a href="trending.html" class="btn btn-primary">🔥 See What's Trending</a>
+      <a href="watchshorts.html" class="btn btn-secondary">⚡ Watch Shorts</a>
+      <a href="upload.html" class="btn btn-ghost">+ Upload Your Video</a>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="category-bar" id="category-bar">
+    <span class="chip active" data-cat="all">All</span>
+    <span class="chip" data-cat="Technology">Technology</span>
+    <span class="chip" data-cat="Gaming">Gaming</span>
+    <span class="chip" data-cat="Music">Music</span>
+    <span class="chip" data-cat="Science">Science</span>
+    <span class="chip" data-cat="Food">Food & Cooking</span>
+    <span class="chip" data-cat="Wellness">Wellness</span>
+  </div>
+
+  <!-- Videos -->
+  <div class="section-title">
+    <span>Featured <span class="accent">Videos</span></span>
+  </div>
+  <div id="video-grid-container">
+    <!-- Skeleton -->
+    <div class="loading-grid" id="skeleton-loader">
+      ${Array(8).fill(0).map(() => `
+        <div class="skeleton-card">
+          <div class="skeleton-thumb"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="video-grid" id="video-grid" style="display:none;"></div>
+  </div>
+</main>
+
+<div class="toast" id="global-toast"></div>
+
+<script src="js/viewtube.js"></script>
+<script>
+  let allVideos = [], allChannels = [], activeCategory = 'all';
+
+  async function init() {
+    [allVideos, allChannels] = await Promise.all([loadJSON('videos.json'), loadJSON('channels.json')]);
+    renderVideos(allVideos);
+    document.getElementById('skeleton-loader').style.display = 'none';
+    document.getElementById('video-grid').style.display = 'grid';
+    initCategories();
+    initSidebarToggle();
+    setActiveSidebarLink();
+    initSearch();
+  }
+
+  function renderVideos(videos) {
+    const grid = document.getElementById('video-grid');
+    grid.innerHTML = '';
+    if (!videos.length) {
+      grid.innerHTML = `<div class="empty-state"><div class="icon">🎬</div><h3>No videos found</h3><p>Try a different category.</p></div>`;
+      return;
+    }
+    videos.forEach(video => {
+      const channel = allChannels.find(c => c.id === video.channelId);
+      grid.appendChild(buildVideoCard(video, channel));
+    });
+  }
+
+  function initCategories() {
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeCategory = chip.dataset.cat;
+        const filtered = activeCategory === 'all'
+          ? allVideos
+          : allVideos.filter(v => v.category === activeCategory);
+        renderVideos(filtered);
+      });
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
